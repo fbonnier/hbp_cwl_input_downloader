@@ -10,16 +10,16 @@ def download_cwl_json (token, id):
     try:
         # Get JSON File
         instance = catalog.get_model_instance(instance_id=str(id))
-        print (instance)
 
         # write in file
         f = open("./input.json", "w")
         f.write(instance["parameters"])
         f.close()
+        print (instance["parameters"], file=sys.stdout)
 
     except:
         # print (e)
-        print ("Error inconnue")
+        print ("Error inconnue", file=sys.stderr)
         exit (1)
 
 
@@ -39,10 +39,10 @@ if __name__ == "__main__":
         if args.id:
             download_cwl_json(token=args.token[0], id=args.id[0])
         else:
-            print ("Error: Instance ID not recognized")
+            print ("Error: Instance ID not recognized", file=sys.stderr)
             exit (1)
     else:
-        print ("Error: Authentification failed")
+        print ("Error: Authentification failed", file=sys.stderr)
         exit (1)
 
     exit(0)
