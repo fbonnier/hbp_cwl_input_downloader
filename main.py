@@ -1,5 +1,6 @@
 import os
 import argparse
+import sys
 
 from hbp_validation_framework import ModelCatalog
 
