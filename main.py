@@ -1,26 +1,31 @@
 import os
 import argparse
-import sys
+import json as json
 
 from hbp_validation_framework import ModelCatalog
 
-def download_cwl_json (token, id):
+def get_cwl_json_kg2 (token, id):
     # Log to EBRAINS KG_v2
     catalog = ModelCatalog(token=str(token))
 
     try:
         # Get JSON File
         instance = catalog.get_model_instance(instance_id=str(id))
+        print ("Catalog Instance")
+        print (instance)
+        json_content = json.loads(instance["parameters"])
+        json_content["source"] = [instance["source"]]
+        print ("\n")
+        print ("JSON Content")
+        print (json_content)
 
         # write in file
-        f = open("./input.json", "w")
-        f.write(instance["parameters"])
-        f.close()
-        print (instance["parameters"], file=sys.stdout)
+        with open("./input.json", "w") as f:
+            json.dump(json_content, f)
 
     except:
         # print (e)
-        print ("Error inconnue", file=sys.stderr)
+        print ("Error inconnue")
         exit (1)
 
 
@@ -38,12 +43,12 @@ if __name__ == "__main__":
 
     if args.token:
         if args.id:
-            download_cwl_json(token=args.token[0], id=args.id[0])
+            get_cwl_json_kg2(token=args.token[0], id=args.id[0])
         else:
-            print ("Error: Instance ID not recognized", file=sys.stderr)
+            print ("Error: Instance ID not recognized")
             exit (1)
     else:
-        print ("Error: Authentification failed", file=sys.stderr)
+        print ("Error: Authentification failed")
         exit (1)
 
     exit(0)
