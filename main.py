@@ -14,19 +14,42 @@ def get_cwl_json_kg2 (token, id):
         print ("Catalog Instance")
         print (instance)
         json_content = json.loads(instance["parameters"])
-        json_content["source"] = [instance["source"]]
-        print ("\n")
-        print ("JSON Content")
-        print (json_content)
+
+        if type(instance["source"]) is list:
+            json_content["source"] = instance["source"]
+        else:
+            json_content["source"] = [instance["source"]]
+
+        # A list of run instructions is expected
+        if type(json_content["run"]) is not list:
+            json_content["run"] = [json_content["run"]]
+
+        # A list of inputs is expected
+        if type(json_content["inputs"]) is not list:
+            json_content["inputs"] = [json_content["inputs"]]
+
+        # A list of outputs is expected
+        if type(json_content["results"]) is not list:
+            json_content["results"] = [json_content["results"]]
+
+        # A list of additional pip install is expected
+        if type(json_content["pip_installs"]) is not list:
+            json_content["pip_installs"] = [json_content["pip_installs"]]
 
         # write in file
         with open("./input.json", "w") as f:
             json.dump(json_content, f)
 
+
+        print ("\nJSON Content:")
+        print (json_content)
+
     except:
         # print (e)
         print ("Error inconnue")
         exit (1)
+
+    print ("\nSuccess:  File created in \"./input.json\"")
 
 
 
