@@ -2,7 +2,43 @@ import os
 import argparse
 import json as json
 
+# Fairgraph
+from fairgraph import KGClient
+import fairgraph.openminds.core as omcore
+from fairgraph.openminds.core.products.model_version import ModelVersion
+
 from hbp_validation_framework import ModelCatalog
+
+# Source server from which the ALREADY KG-v3 instances are downloaded
+# Default is Official KG-v3 server
+SOURCE_SERVER = "https://core.kg.ebrains.eu"
+# SOURCE_SERVER = "https://kg.ebrains.eu/api/instances/"
+
+# KG-v3, KG-Core Python Interface
+from kg_core.oauth import SimpleToken
+from kg_core.kg import KGv3
+from kg_core.models import Stage
+from kg_core.models import Pagination
+
+
+def get_cwl_json_kg3 (token=None, id=None):
+    # token_handler = SimpleToken(token)
+    # print("Simple Token OK")
+    # catalog = KGv3(host=SOURCE_SERVER, token_handler=token_handler)
+    # print("Catalog OK")
+    # instance_metadata = catalog.get_instance(stage=Stage.RELEASED, instance_id=id).data()
+    # print ("KGV3 instance:\n")
+    # print (instance_metadata)
+    # print ("\n\n")
+
+    # Fairgraph
+    client = KGClient(token=token)
+    print("Fairgraph Token ok")
+    print(omcore.list_kg_classes())
+    print("List kg classes ok")
+    # model_version = ModelVersion.list(client, id=id, space="model")
+    model_version = ModelVersion.list(client, scope='released')
+
 
 def get_cwl_json_kg2 (token, id):
     # Log to EBRAINS KG_v2
@@ -62,11 +98,29 @@ if __name__ == "__main__":
     parser.add_argument("--token", type=str, metavar="Authentification Token", nargs=1, dest="token", default="",\
     help="Authentification Token used to log to EBRAINS")
 
+    parser.add_argument("--kg", type=int, metavar="KG version", nargs=1, dest="kg", default=3,\
+    help="Version of Knowledge Graph to use. Should be 2 or 3")
+
     args = parser.parse_args()
 
-    if args.token:
-        if args.id:
-            get_cwl_json_kg2(token=args.token[0], id=args.id[0])
+    token = args.token[0]
+    id = args.id[0]
+    kg = args.kg[0]
+
+    # print ("Token:" + str(token) + " " + str(type(token)))
+    # print ("Id:" + str(id) + " " + str(type(id)))
+    # print ("KGv:" + str(kg) + " " + str(type(kg)))
+
+
+    if token:
+        if id:
+            if kg == 2:
+                get_cwl_json_kg2(token=token, id=id)
+            elif kg == 3:
+                get_cwl_json_kg3(token=token, id=id)
+            else:
+                print("Error: KG Version not recognized")
+                exit (1)
         else:
             print ("Error: Instance ID not recognized")
             exit (1)
