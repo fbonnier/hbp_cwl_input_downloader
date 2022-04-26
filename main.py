@@ -1,11 +1,15 @@
 import os
 import argparse
 import json as json
+import warnings
 
 # Fairgraph
 from fairgraph import KGClient
 import fairgraph.openminds.core as omcore
-from fairgraph.openminds.core.products.model_version import ModelVersion
+from fairgraph.openminds.core import ModelVersion
+
+from fairgraph.openminds.core import DatasetVersion
+from fairgraph.openminds.controlledterms import Technique
 
 from hbp_validation_framework import ModelCatalog
 
@@ -21,24 +25,87 @@ from kg_core.models import Stage
 from kg_core.models import Pagination
 
 
-def get_cwl_json_kg3 (token=None, id=None):
-    # token_handler = SimpleToken(token)
-    # print("Simple Token OK")
-    # catalog = KGv3(host=SOURCE_SERVER, token_handler=token_handler)
-    # print("Catalog OK")
-    # instance_metadata = catalog.get_instance(stage=Stage.RELEASED, instance_id=id).data()
-    # print ("KGV3 instance:\n")
-    # print (instance_metadata)
-    # print ("\n\n")
+### Parameters ###
+#*****************
+# id: str
+# repos: str
+# inputs: array of dict {url: x, destination: y}
+# outputs: array of str
+# runscript: array of str
+def build_json_file (id, repos, inputs, outputs, runscript):
+    json_content = {
+        "id" : id,
+        "source" : repos,
+        "inputs": inputs,
+        "results": outputs,
+        "run": runscript
+    }
+
+
+def get_cwl_json_kg3 (token=None, id=None, run=None):
 
     # Fairgraph
-    client = KGClient(token=token)
+    client = KGClient(token)
     print("Fairgraph Token ok")
-    print(omcore.list_kg_classes())
-    print("List kg classes ok")
-    # model_version = ModelVersion.list(client, id=id, space="model")
-    model_version = ModelVersion.list(client, scope='released')
+    try:
+        model_version = ModelVersion.from_id(id, client)
+        model_version.show()
+        print("Model Version ok")
 
+        # Get repo location
+        instance_repo = model_version.repository
+        if not instance_repo:
+            raise Exception ("Instance repository does not exists")
+        print ("Repo :")
+        print (instance_repo)
+        print("\n")
+        instance_repo = model_version.repository.resolve(client)
+        print ("Repo solved :")
+        print (instance_repo)
+        print("\n")
+
+        # Get inputs
+        #       !! No exception raised if no inputs
+        #       !! Warning message is shown instead
+        instance_inputs = model_version.input_data
+        if not instance_inputs:
+            warnings.warn("No input data for this Instance ... Continue")
+        else:
+            print ("Inputs :")
+            print (instance_inputs)
+            print("\n")
+
+        # Get Outputs
+        # Decision: What to do with no output expected ?
+        # ! Exception raised
+        instance_outputs = model_version.output_data
+        if not instance_outputs:
+            raise Exception ("No output data to compare for this Instance")
+        print ("Outputs :")
+        print (instance_outputs)
+        print("\n")
+
+        # Get Run instructions,
+        # by default the run instruction is set according to parameter $run
+        # TODO:
+        # - Add run instruction Download
+        if not run:
+            raise Exception ("No run instruction specified for this Instance")
+        instance_run = run
+        print ("Run Instruction :")
+        print (instance_run)
+        print("\n")
+
+        # Build JSON File that contains all important informations
+        build_json_file (id, instance_repo, instance_inputs, instance_outputs, instance_run)
+
+    except Exception as e:
+        print ("Error:")
+        print (e)
+        exit (1)
+    except:
+        print ("Error: Unknown Error")
+        exit (1)
 
 def get_cwl_json_kg2 (token, id):
     # Log to EBRAINS KG_v2
@@ -101,11 +168,17 @@ if __name__ == "__main__":
     parser.add_argument("--kg", type=int, metavar="KG version", nargs=1, dest="kg", default=3,\
     help="Version of Knowledge Graph to use. Should be 2 or 3")
 
+    ## Run instruction can be specified in command line
+    ## A single instruction (str) is checked as of now
+    parser.add_argument("--run", type=str, metavar="Run instruction", nargs=1, dest="run", default="./run",\
+    help="Running instruction to run the model instance")
+
     args = parser.parse_args()
 
     token = args.token[0]
     id = args.id[0]
     kg = args.kg[0]
+    run = args.run[0]
 
     # print ("Token:" + str(token) + " " + str(type(token)))
     # print ("Id:" + str(id) + " " + str(type(id)))
