@@ -1,0 +1,53 @@
+#!/bin/bash
+
+TOKEN=""
+HBP_ID=""
+RUN_INSTR=""
+
+NARGS=$(($#-1))
+
+echo $NARGS
+
+for (( iarg=1; iarg<=NARGS; iarg++)); do
+    jarg=$((iarg+1))
+    # echo "${!iarg} ${!jarg}"
+
+    if [ ${!iarg} == "--token" ]
+        then
+            TOKEN=${!jarg}
+            echo $TOKEN
+    fi
+    if [ {!iarg} == "--run" ]
+        then
+            RUN_INSTR=${!jarg}
+            echo $HBP_ID
+    fi
+    if [ {!iarg} == "--id" ]
+        then
+            HBP_ID=${!jarg}
+            echo $RUN_INSTR
+    fi
+done
+
+
+
+# for iarg in "$@"
+# do
+#     if [ $iarg == "--token" ]
+#         then
+#             TOKEN=$((iarg+1))
+#             echo $TOKEN
+#     fi
+#     if [ iarg == "--run" ]
+#         then
+#             RUN_INSTR=$iarg+1
+#     fi
+#     if [ iarg == "--id" ]
+#         then
+#             HBP_ID=$iarg+1
+#     fi
+# done
+
+# echo "${TOKEN} ${HBP_ID} ${RUN_INSTR}"
+
+python3 $( dirname -- "$0"; )/main.py --token $TOKEN --id $HBP_ID --run $RUN_INSTR
