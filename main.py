@@ -19,10 +19,10 @@ SOURCE_SERVER = "https://core.kg.ebrains.eu"
 # SOURCE_SERVER = "https://kg.ebrains.eu/api/instances/"
 
 # KG-v3, KG-Core Python Interface
-from kg_core.oauth import SimpleToken
-from kg_core.kg import KGv3
-from kg_core.models import Stage
-from kg_core.models import Pagination
+# from kg_core.oauth import SimpleToken
+# from kg_core.kg import KGv3
+# from kg_core.models import Stage
+# from kg_core.models import Pagination
 
 
 ### Parameters ###
@@ -80,10 +80,11 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         # ! Exception raised
         instance_outputs = model_version.output_data
         if not instance_outputs:
-            raise Exception ("No output data to compare for this Instance")
-        print ("Outputs :")
-        print (instance_outputs)
-        print("\n")
+            warnings.warn("No output data to compare for this Instance ... Continue")
+        else:
+            print ("Outputs :")
+            print (instance_outputs)
+            print("\n")
 
         # Get Run instructions,
         # by default the run instruction is set according to parameter $run
@@ -165,8 +166,8 @@ if __name__ == "__main__":
     parser.add_argument("--token", type=str, metavar="Authentification Token", nargs=1, dest="token", default="",\
     help="Authentification Token used to log to EBRAINS")
 
-    parser.add_argument("--kg", type=int, metavar="KG version", nargs=1, dest="kg", default=3,\
-    help="Version of Knowledge Graph to use. Should be 2 or 3")
+    # parser.add_argument("--kg", type=int, metavar="KG version", nargs=1, dest="kg", default=3,\
+    # help="Version of Knowledge Graph to use. Should be 2 or 3")
 
     ## Run instruction can be specified in command line
     ## A single instruction (str) is checked as of now
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 
     token = args.token[0]
     id = args.id[0]
-    kg = args.kg[0]
+    # kg = args.kg[0]
     run = args.run[0]
 
     # print ("Token:" + str(token) + " " + str(type(token)))
@@ -187,13 +188,13 @@ if __name__ == "__main__":
 
     if token:
         if id:
-            if kg == 2:
-                get_cwl_json_kg2(token=token, id=id)
-            elif kg == 3:
-                get_cwl_json_kg3(token=token, id=id)
-            else:
-                print("Error: KG Version not recognized")
-                exit (1)
+            # if kg == 2:
+            #     get_cwl_json_kg2(token=token, id=id)
+            # elif kg == 3:
+            get_cwl_json_kg3(token=token, id=id, run=run)
+            # else:
+            #     print("Error: KG Version not recognized")
+            #     exit (1)
         else:
             print ("Error: Instance ID not recognized")
             exit (1)
