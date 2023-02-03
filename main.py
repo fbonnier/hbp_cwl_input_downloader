@@ -18,6 +18,32 @@ from hbp_validation_framework import ModelCatalog
 SOURCE_SERVER = "https://core.kg.ebrains.eu"
 # SOURCE_SERVER = "https://kg.ebrains.eu/api/instances/"
 
+report_default_values = {
+    "id": None, # str, ID of the model
+    "workdir": "./", # str, path of the working directory
+    "workflow": {
+        "run": {
+            "url": None, # URL of the workflow instruction file to download
+            "path": None}, # Absolute path of the workflow instruction file to download
+        "data": {
+            "url": None, # URL of the workflow data file to download
+            "path": None}, # Absolute path of the workflow data file to download
+        },
+    "run": {
+        "url": None, # URL of the code to download and execute
+        "path": None, # Absolute path of code to execute
+        "pre-instruction": [], # array of known instructions: untar, compile, move inputs, ...
+        "instruction": None, # str
+        "inputs": [], # Should contain "url" and "path" of input files to download
+        "outputs": [], # Should contain "url" and "path" of expected output files to download
+        "environment": {
+            "pip install": [], # additional PIP packages to install
+            "module deps": [], # additional module packages to load
+            "profiling configuration": []} # profiling configuration to add for profiling and tracing analysis
+    
+    }
+    }
+
 # KG-v3, KG-Core Python Interface
 # from kg_core.oauth import SimpleToken
 # from kg_core.kg import KGv3
@@ -32,25 +58,60 @@ SOURCE_SERVER = "https://core.kg.ebrains.eu"
 # inputs: array of dict {url: x, destination: y}
 # outputs: array of str
 # runscript: array of str
-def build_json_file (id, repos, inputs, outputs, runscript):
-    json_content = {
-        "id" : id,
-        "source" : repos,
-        "inputs": inputs,
-        "results": outputs,
-        "run": runscript
-    }
+def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, environment):
+    json_content = { "Metadata": report_default_values}
+    
+    # Asserts
+    assert (id != None)
+    assert (repos != None)
+    assert (runscript != None)
+    
+    # Get Model's ID
+    json_content["Metadata"]["id"] = id
+
+    # Get Workdir
+    json_content["Metadata"]["workdir"] = workdir if workdir else report_default_values["workdir"]
+
+    # Get Workflow
+    # TODO
+
+    # Get run instructions
+    # 1. Code URL
+    json_content["Metadata"]["run"]["url"] = repos
+    # 2. Code absolute path
+    json_content["Metadata"]["run"]["path"] = report_default_values["workdir"]
+    # 3. Pre-instructions
+    json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
+    # 4. instruction
+    # 5. Inputs
+    # 6. Expected outputs
+    # 7. Environment configuration
+    # 7.1 PIP installs
+    # 7.2 Module loads
+    # 7.3 Profiling conf
+
+
+
+
+    print (json_content)
+
+    return json_content
+    
 
 
 def get_cwl_json_kg3 (token=None, id=None, run=None):
 
     # Fairgraph
     client = KGClient(token)
+    if not client:
+        raise Exception ("Client is " + str(type(client)))
     print("Fairgraph Token ok")
     try:
         model_version = ModelVersion.from_id(id, client)
+
+        if not model_version:
+            raise Exception ("ModelVersion is None")
         model_version.show()
-        print("Model Version ok")
 
         # Get repo location
         instance_repo = model_version.repository
@@ -59,10 +120,11 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         print ("Repo :")
         print (instance_repo)
         print("\n")
-        instance_repo = model_version.repository.resolve(client)
+        instance_repo = model_version.repository.resolve(client).iri.value
         print ("Repo solved :")
         print (instance_repo)
         print("\n")
+        print (type(instance_repo))
 
         # Get inputs
         #       !! No exception raised if no inputs
@@ -98,7 +160,9 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         print("\n")
 
         # Build JSON File that contains all important informations
-        build_json_file (id, instance_repo, instance_inputs, instance_outputs, instance_run)
+        json_content=build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs=instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
+        with open("./report_example.json", "w") as f:
+            json.dump(json_content, f, indent=4)
 
     except Exception as e:
         print ("Error:")
@@ -108,52 +172,52 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         print ("Error: Unknown Error")
         exit (1)
 
-def get_cwl_json_kg2 (token, id):
-    # Log to EBRAINS KG_v2
-    catalog = ModelCatalog(token=str(token))
+# def get_cwl_json_kg2 (token, id):
+#     # Log to EBRAINS KG_v2
+#     catalog = ModelCatalog(token=str(token))
 
-    try:
-        # Get JSON File
-        instance = catalog.get_model_instance(instance_id=str(id))
-        print ("Catalog Instance")
-        print (instance)
-        json_content = json.loads(instance["parameters"])
+#     try:
+#         # Get JSON File
+#         instance = catalog.get_model_instance(instance_id=str(id))
+#         print ("Catalog Instance")
+#         print (instance)
+#         json_content = json.loads(instance["parameters"])
 
-        if type(instance["source"]) is list:
-            json_content["source"] = instance["source"]
-        else:
-            json_content["source"] = [instance["source"]]
+#         if type(instance["source"]) is list:
+#             json_content["source"] = instance["source"]
+#         else:
+#             json_content["source"] = [instance["source"]]
 
-        # A list of run instructions is expected
-        if type(json_content["run"]) is not list:
-            json_content["run"] = [json_content["run"]]
+#         # A list of run instructions is expected
+#         if type(json_content["run"]) is not list:
+#             json_content["run"] = [json_content["run"]]
 
-        # A list of inputs is expected
-        if type(json_content["inputs"]) is not list:
-            json_content["inputs"] = [json_content["inputs"]]
+#         # A list of inputs is expected
+#         if type(json_content["inputs"]) is not list:
+#             json_content["inputs"] = [json_content["inputs"]]
 
-        # A list of outputs is expected
-        if type(json_content["results"]) is not list:
-            json_content["results"] = [json_content["results"]]
+#         # A list of outputs is expected
+#         if type(json_content["results"]) is not list:
+#             json_content["results"] = [json_content["results"]]
 
-        # A list of additional pip install is expected
-        if type(json_content["pip_installs"]) is not list:
-            json_content["pip_installs"] = [json_content["pip_installs"]]
+#         # A list of additional pip install is expected
+#         if type(json_content["pip_installs"]) is not list:
+#             json_content["pip_installs"] = [json_content["pip_installs"]]
 
-        # write in file
-        with open("./input.json", "w") as f:
-            json.dump(json_content, f)
+#         # write in file
+#         with open("./input.json", "w") as f:
+#             json.dump(json_content, f)
 
 
-        print ("\nJSON Content:")
-        print (json_content)
+#         print ("\nJSON Content:")
+#         print (json_content)
 
-    except:
-        # print (e)
-        print ("Error inconnue")
-        exit (1)
+#     except:
+#         # print (e)
+#         print ("Error inconnue")
+#         exit (1)
 
-    print ("\nSuccess:  File created in \"./input.json\"")
+#     print ("\nSuccess:  File created in \"./input.json\"")
 
 
 
