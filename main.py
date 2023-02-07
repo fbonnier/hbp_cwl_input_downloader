@@ -73,7 +73,21 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     json_content["Metadata"]["workdir"] = workdir if workdir else report_default_values["workdir"]
 
     # Get Workflow
-    # TODO
+    # 1. Run file
+    try:
+        json_content["Metadata"]["workdir"]["run"]["url"] = workflow["run"]
+    
+    except:
+        json_content["Metadata"]["workdir"]["run"]["url"] = report_default_values["workflow"]["run"]["url"]
+    json_content["Metadata"]["workdir"]["run"]["path"] = json_content["Metadata"]["workdir"]
+
+    # 2. Data file
+    try:
+        json_content["Metadata"]["workdir"]["data"]["url"] = workflow["data"]
+    
+    except:
+        json_content["Metadata"]["workdir"]["data"]["url"] = report_default_values["workflow"]["data"]["url"]
+    json_content["Metadata"]["workdir"]["data"]["path"] = json_content["Metadata"]["workdir"]
 
     # Get run instructions
     # 1. Code URL
@@ -83,14 +97,28 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
     # 4. instruction
+    json_content["Metadata"]["run"]["instruction"] = runscript if runscript else report_default_values["run"]["instruction"]
     # 5. Inputs
+    json_content["Metadata"]["run"]["inputs"] = inputs if inputs else report_default_values["run"]["inputs"]
     # 6. Expected outputs
+    json_content["Metadata"]["run"]["outputs"] = outputs if outputs else report_default_values["run"]["outputs"]
     # 7. Environment configuration
     # 7.1 PIP installs
+    try:
+        json_content["Metadata"]["run"]["environment"]["pip install"] = environment["pip install"]
+    except:
+        json_content["Metadata"]["run"]["environment"]["pip install"] = report_default_values["run"]["environment"]["pip install"]
+
     # 7.2 Module loads
+    try:
+        json_content["Metadata"]["run"]["environment"]["module deps"] = environment["module deps"]
+    except:
+        json_content["Metadata"]["run"]["environment"]["module deps"] = report_default_values["run"]["environment"]["module deps"]
     # 7.3 Profiling conf
-
-
+    try:
+        json_content["Metadata"]["run"]["environment"]["profiling configuration"] = environment["profiling configuration"]
+    except:
+        json_content["Metadata"]["run"]["environment"]["profiling configuration"] = report_default_values["run"]["environment"]["profiling configuration"]
 
 
     print (json_content)
@@ -160,7 +188,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         print("\n")
 
         # Build JSON File that contains all important informations
-        json_content=build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs=instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
+        json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
         with open("./report_example.json", "w") as f:
             json.dump(json_content, f, indent=4)
 
