@@ -2,6 +2,7 @@ import os
 import argparse
 import json as json
 import warnings
+import hashlib
 
 # Fairgraph
 from fairgraph import KGClient
@@ -35,7 +36,7 @@ report_default_values = {
         "pre-instruction": [], # array of known instructions: untar, compile, move inputs, ...
         "instruction": None, # str
         "inputs": [], # Should contain "url" and "path" of input files to download
-        "outputs": [], # Should contain "url" and "path" of expected output files to download
+        "outputs": [], # Should contain "url", "path" and "hash" of expected output files to download
         "environment": {
             "pip install": [], # additional PIP packages to install
             "module deps": [], # additional module packages to load
@@ -102,6 +103,14 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     json_content["Metadata"]["run"]["inputs"] = inputs if inputs else report_default_values["run"]["inputs"]
     # 6. Expected outputs
     json_content["Metadata"]["run"]["outputs"] = outputs if outputs else report_default_values["run"]["outputs"]
+    # 6.1 Calculates hash of outputs
+    for ioutput in json_content["Metadata"]["run"]["outputs"]:
+        # Calculates hash
+        ioutput["hash"] = str(hashlib.md5(ioutput["url"].encode()).hexdigest())
+        # Calculates output path
+        ioutput["path"] = str(str(json_content["Metadata"]["workdir"]) + "/ouputs/" +
+        str(ioutput["hash"]))
+        
     # 7. Environment configuration
     # 7.1 PIP installs
     try:
