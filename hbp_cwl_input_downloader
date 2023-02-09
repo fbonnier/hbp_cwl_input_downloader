@@ -9,15 +9,15 @@ NARGS=$(($#-1))
 for (( iarg=1; iarg<=NARGS; iarg++)); do
     jarg=$((iarg+1))
 
-    if [ ${!iarg} == "--token" ]
+    if [ "${!iarg}" == "--token" ]
         then
             TOKEN=${!jarg}
     fi
-    if [ ${!iarg} == "--run" ]
+    if [ "${!iarg}" == "--run" ]
         then
             RUN_INSTR=${!jarg}
     fi
-    if [ ${!iarg} == "--id" ]
+    if [ "${!iarg}" == "--id" ]
         then
             HBP_ID=${!jarg}
     fi
