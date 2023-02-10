@@ -130,9 +130,6 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     except:
         json_content["Metadata"]["run"]["environment"]["profiling configuration"] = report_default_values["run"]["environment"]["profiling configuration"]
 
-
-    print (json_content)
-
     return json_content
     
 
@@ -155,14 +152,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         instance_repo = model_version.repository
         if not instance_repo:
             raise Exception ("Instance repository does not exists")
-        print ("Repo :")
-        print (instance_repo)
-        print("\n")
         instance_repo = model_version.repository.resolve(client).iri.value
-        print ("Repo solved :")
-        print (instance_repo)
-        print("\n")
-        print (type(instance_repo))
 
         # Get inputs
         #       !! No exception raised if no inputs
@@ -170,10 +160,6 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         instance_inputs = model_version.input_data
         if not instance_inputs:
             warnings.warn("No input data for this Instance ... Continue")
-        else:
-            print ("Inputs :")
-            print (instance_inputs)
-            print("\n")
 
         # Get Outputs
         # Decision: What to do with no output expected ?
@@ -181,10 +167,6 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         instance_outputs = model_version.output_data
         if not instance_outputs:
             warnings.warn("No output data to compare for this Instance ... Continue")
-        else:
-            print ("Outputs :")
-            print (instance_outputs)
-            print("\n")
 
         # Get Run instructions,
         # by default the run instruction is set according to parameter $run
@@ -193,13 +175,10 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         if not run:
             raise Exception ("No run instruction specified for this Instance")
         instance_run = run
-        print ("Run Instruction :")
-        print (instance_run)
-        print("\n")
 
         # Build JSON File that contains all important informations
         json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
-        with open("./report_example.json", "w") as f:
+        with open("./report.json", "w") as f:
             json.dump(json_content, f, indent=4)
 
     except Exception as e:
