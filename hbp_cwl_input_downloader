@@ -11,15 +11,15 @@ for (( iarg=1; iarg<=NARGS; iarg++)); do
 
     if [ "${!iarg}" == "--token" ]
         then
-            TOKEN=${!jarg}
+            TOKEN="${!jarg}"
     fi
     if [ "${!iarg}" == "--run" ]
         then
-            RUN_INSTR=${!jarg}
+            RUN_INSTR="${!jarg}"
     fi
     if [ "${!iarg}" == "--id" ]
         then
-            HBP_ID=${!jarg}
+            HBP_ID="${!jarg}"
     fi
 done
 
@@ -35,5 +35,5 @@ if [ "$HBP_ID" == "" ] || [ "$TOKEN" == "" ]; then
         echo "--run: running instruction string to run the model"
     fi
 else
-    python3 $( dirname -- "$0"; )/main.py --token $TOKEN --id $HBP_ID --run $RUN_INSTR
+    python3 $( dirname -- "$0"; )/main.py --token "$TOKEN" --id "$HBP_ID" --run "$RUN_INSTR"
 fi
