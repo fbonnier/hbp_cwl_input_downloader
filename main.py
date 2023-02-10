@@ -76,23 +76,24 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     # Get Workflow
     # 1. Run file
     try:
-        json_content["Metadata"]["workdir"]["run"]["url"] = workflow["run"]
+        json_content["Metadata"]["workflow"]["run"]["url"] = workflow["run"]
     
     except:
-        json_content["Metadata"]["workdir"]["run"]["url"] = report_default_values["workflow"]["run"]["url"]
-    json_content["Metadata"]["workdir"]["run"]["path"] = json_content["Metadata"]["workdir"]
+        json_content["Metadata"]["workflow"]["run"]["url"] = report_default_values["workflow"]["run"]["url"]
+    json_content["Metadata"]["workflow"]["run"]["path"] = json_content["Metadata"]["workdir"]
 
     # 2. Data file
     try:
-        json_content["Metadata"]["workdir"]["data"]["url"] = workflow["data"]
+        json_content["Metadata"]["workflow"]["data"]["url"] = workflow["data"]
     
     except:
-        json_content["Metadata"]["workdir"]["data"]["url"] = report_default_values["workflow"]["data"]["url"]
-    json_content["Metadata"]["workdir"]["data"]["path"] = json_content["Metadata"]["workdir"]
+        json_content["Metadata"]["workflow"]["data"]["url"] = report_default_values["workflow"]["data"]["url"]
+    json_content["Metadata"]["workflow"]["data"]["path"] = json_content["Metadata"]["workdir"]
 
     # Get run instructions
     # 1. Code URL
     json_content["Metadata"]["run"]["url"] = repos
+
     # 2. Code absolute path
     json_content["Metadata"]["run"]["path"] = report_default_values["workdir"]
     # 3. Pre-instructions
