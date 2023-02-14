@@ -144,7 +144,11 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         if not model_version:
             raise Exception ("ModelVersion is None")
         model_version.show()
-
+    except Exception as e:
+        print (e)
+        exit (1)
+    
+    try:
         # Get repo location
         instance_repo = []
         if not model_version.repository:
@@ -153,7 +157,11 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         # instance_repo.append (model_version.repository.resolve(client).label.value)
         instance_repo.append (model_version.homepage.resolve(client))
         print ("Repos : " + str(instance_repo))
+    except Exception as e:
+        print (e)
+        exit (1)
 
+    try:
         # Get inputs
         #       !! No exception raised if no inputs
         #       !! Warning message is shown instead
@@ -175,18 +183,18 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         if not run:
             raise Exception ("No run instruction specified for this Instance")
         instance_run = run
-
+    except Exception as e:
+        print (e)
+        exit (1)
+        
+    try:
         # Build JSON File that contains all important informations
         json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
         with open("./report.json", "w") as f:
             json.dump(json_content, f, indent=4)
 
     except Exception as e:
-        print ("Error: get_cwl_json_kg3")
         print (e)
-        exit (1)
-    except:
-        print ("Error: Unknown Error")
         exit (1)
 
 # def get_cwl_json_kg2 (token, id):
