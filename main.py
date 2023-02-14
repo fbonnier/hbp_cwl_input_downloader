@@ -152,6 +152,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         instance_repo.append (model_version.repository.resolve(client).iri.value)
         # instance_repo.append (model_version.repository.resolve(client).label.value)
         instance_repo.append (model_version.homepage.resolve(client))
+        print ("Repos : " + str(instance_repo))
 
         # Get inputs
         #       !! No exception raised if no inputs
@@ -181,7 +182,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
             json.dump(json_content, f, indent=4)
 
     except Exception as e:
-        print ("Error:")
+        print ("Error: get_cwl_json_kg3")
         print (e)
         exit (1)
     except:
