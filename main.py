@@ -31,8 +31,7 @@ report_default_values = {
             "path": None}, # Absolute path of the workflow data file to download
         },
     "run": {
-        "url": [], # URL of the code to download and execute, IRI, Label and Homepage
-        "path": [], # Absolute path of codes to execute
+        "code": [], # URL and Path of the code to download and execute, IRI, Label and Homepage
         "pre-instruction": [], # array of known instructions: untar, compile, move inputs, ...
         "instruction": None, # str
         "inputs": [], # Should contain "url" and "path" of input files to download
@@ -92,10 +91,8 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
 
     # Get run instructions
     # 1. Code URL
-    json_content["Metadata"]["run"]["url"] = repos
+    json_content["Metadata"]["run"]["code"] = repos
 
-    # 2. Code absolute path
-    json_content["Metadata"]["run"]["path"] = report_default_values["workdir"]
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
     # 4. instruction
