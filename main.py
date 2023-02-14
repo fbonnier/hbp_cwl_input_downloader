@@ -31,8 +31,8 @@ report_default_values = {
             "path": None}, # Absolute path of the workflow data file to download
         },
     "run": {
-        "url": None, # URL of the code to download and execute
-        "path": None, # Absolute path of code to execute
+        "url": [], # URL of the code to download and execute, IRI, Label and Homepage
+        "path": [], # Absolute path of codes to execute
         "pre-instruction": [], # array of known instructions: untar, compile, move inputs, ...
         "instruction": None, # str
         "inputs": [], # Should contain "url" and "path" of input files to download
@@ -149,10 +149,12 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         model_version.show()
 
         # Get repo location
-        instance_repo = model_version.repository
-        if not instance_repo:
+        instance_repo = []
+        if not model_version.repository:
             raise Exception ("Instance repository does not exists")
-        instance_repo = model_version.repository.resolve(client).iri.value
+        instance_repo.append (model_version.repository.resolve(client).iri.value)
+        # instance_repo.append (model_version.repository.resolve(client).label.value)
+        instance_repo.append (model_version.homepage.resolve(client))
 
         # Get inputs
         #       !! No exception raised if no inputs
