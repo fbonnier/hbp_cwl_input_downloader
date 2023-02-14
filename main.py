@@ -54,7 +54,7 @@ report_default_values = {
 ### Parameters ###
 #*****************
 # id: str
-# repos: str
+# repos: array of str
 # inputs: array of dict {url: x, destination: y}
 # outputs: array of str
 # runscript: array of str
@@ -91,7 +91,8 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
 
     # Get run instructions
     # 1. Code URL
-    json_content["Metadata"]["run"]["code"] = repos
+    for icode in repos:
+        json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]}) 
 
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
