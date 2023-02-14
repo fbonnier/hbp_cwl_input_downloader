@@ -155,7 +155,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
             raise Exception ("Instance repository does not exists")
         instance_repo.append (model_version.repository.resolve(client).iri.value)
         # instance_repo.append (model_version.repository.resolve(client).label.value)
-        instance_repo.append (model_version.homepage.resolve(client).url.iri.value)
+        instance_repo.append (model_version.homepage.resolve(client).url.value)
         print ("Repos : " + str(instance_repo))
     except Exception as e:
         print (e)
