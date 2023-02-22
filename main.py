@@ -3,6 +3,7 @@ import argparse
 import json as json
 import warnings
 import hashlib
+import re
 
 # Fairgraph
 from fairgraph import KGClient
