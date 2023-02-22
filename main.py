@@ -44,6 +44,31 @@ report_default_values = {
     }
     }
 
+
+def is_modeldb_page (url_link):
+    assert (type(url_link) == type(str))
+    if url_link.startswith("https://senselab.med.yale.edu/") or url_link.startswith("http://modeldb.science"):
+        return True
+    return False
+
+def get_modeldb_download_link_from_page (modeldb_page_url):
+    assert (type(modeldb_page_url) == type(str), str("Modeldb URL (" + modeldb_page_url + ") is invalide"))
+
+    modeldb_id = None
+
+    try:
+        modeldb_id = re.findall("model=\d+", modeldb_page_url)[0].split("=")[1]
+    except Exception as e:
+        print ("get_modeldb_download_link_from_page")
+        print (e)
+        
+    return get_modeldb_download_link_from_id (int(modeldb_id))
+
+def get_modeldb_download_link_from_id (modeldb_id):
+    assert (type(modeldb_id) == type(int), str("Modeldb ID (" + modeldb_id + ") is invalide"))
+    
+    return (str("http://modeldb.science/eavBinDown?o=" + str(modeldb_id)))
+
 # KG-v3, KG-Core Python Interface
 # from kg_core.oauth import SimpleToken
 # from kg_core.kg import KGv3
@@ -92,7 +117,10 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     # Get run instructions
     # 1. Code URL
     for icode in repos:
-        json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]}) 
+        if is_modeldb_page (icode):
+            json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"]})
+        else:
+            json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]}) 
 
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
@@ -196,54 +224,6 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         print (e)
         exit (1)
 
-# def get_cwl_json_kg2 (token, id):
-#     # Log to EBRAINS KG_v2
-#     catalog = ModelCatalog(token=str(token))
-
-#     try:
-#         # Get JSON File
-#         instance = catalog.get_model_instance(instance_id=str(id))
-#         print ("Catalog Instance")
-#         print (instance)
-#         json_content = json.loads(instance["parameters"])
-
-#         if type(instance["source"]) is list:
-#             json_content["source"] = instance["source"]
-#         else:
-#             json_content["source"] = [instance["source"]]
-
-#         # A list of run instructions is expected
-#         if type(json_content["run"]) is not list:
-#             json_content["run"] = [json_content["run"]]
-
-#         # A list of inputs is expected
-#         if type(json_content["inputs"]) is not list:
-#             json_content["inputs"] = [json_content["inputs"]]
-
-#         # A list of outputs is expected
-#         if type(json_content["results"]) is not list:
-#             json_content["results"] = [json_content["results"]]
-
-#         # A list of additional pip install is expected
-#         if type(json_content["pip_installs"]) is not list:
-#             json_content["pip_installs"] = [json_content["pip_installs"]]
-
-#         # write in file
-#         with open("./input.json", "w") as f:
-#             json.dump(json_content, f)
-
-
-#         print ("\nJSON Content:")
-#         print (json_content)
-
-#     except:
-#         # print (e)
-#         print ("Error inconnue")
-#         exit (1)
-
-#     print ("\nSuccess:  File created in \"./input.json\"")
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download input file for CWL workflow from an HBP Model Instance ID")
@@ -254,9 +234,6 @@ if __name__ == "__main__":
     parser.add_argument("--token", type=str, metavar="Authentification Token", nargs=1, dest="token", default="",\
     help="Authentification Token used to log to EBRAINS")
 
-    # parser.add_argument("--kg", type=int, metavar="KG version", nargs=1, dest="kg", default=3,\
-    # help="Version of Knowledge Graph to use. Should be 2 or 3")
-
     ## Run instruction can be specified in command line
     ## A single instruction (str) is checked as of now
     parser.add_argument("--run", type=str, metavar="Run instruction", nargs=1, dest="run", default="./run",\
@@ -266,23 +243,11 @@ if __name__ == "__main__":
 
     token = args.token[0]
     id = args.id[0]
-    # kg = args.kg[0]
     run = args.run[0]
-
-    # print ("Token:" + str(token) + " " + str(type(token)))
-    # print ("Id:" + str(id) + " " + str(type(id)))
-    # print ("KGv:" + str(kg) + " " + str(type(kg)))
-
 
     if token:
         if id:
-            # if kg == 2:
-            #     get_cwl_json_kg2(token=token, id=id)
-            # elif kg == 3:
             get_cwl_json_kg3(token=token, id=id, run=run)
-            # else:
-            #     print("Error: KG Version not recognized")
-            #     exit (1)
         else:
             print ("Error: Instance ID not recognized")
             exit (1)
