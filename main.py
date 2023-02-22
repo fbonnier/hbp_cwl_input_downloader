@@ -138,7 +138,6 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
     client = KGClient(token)
     if not client:
         raise Exception ("Client is " + str(type(client)))
-    print("Fairgraph Token ok")
     try:
         model_version = ModelVersion.from_id(id, client)
 
@@ -157,7 +156,6 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         instance_repo.append (model_version.repository.resolve(client).iri.value)
         # instance_repo.append (model_version.repository.resolve(client).label.value)
         instance_repo.append (model_version.homepage.resolve(client).url.value)
-        print ("Repos : " + str(instance_repo))
     except Exception as e:
         print (e)
         exit (1)
