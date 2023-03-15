@@ -4,6 +4,7 @@ import json as json
 import warnings
 import hashlib
 import re
+import requests
 
 # Fairgraph
 from fairgraph import KGClient
@@ -45,6 +46,9 @@ report_default_values = {
     }
     }
 
+#------------------------------
+### ModelDB models
+#------------------------------
 
 def is_modeldb_page (url_link):
     assert (type(url_link) == type(str))
@@ -69,12 +73,63 @@ def get_modeldb_download_link_from_id (modeldb_id):
     assert (type(modeldb_id) == type(int), str("Modeldb ID (" + modeldb_id + ") is invalide"))
     
     return (str("http://modeldb.science/eavBinDown?o=" + str(modeldb_id)))
+#------------------------------
 
-# KG-v3, KG-Core Python Interface
-# from kg_core.oauth import SimpleToken
-# from kg_core.kg import KGv3
-# from kg_core.models import Stage
-# from kg_core.models import Pagination
+#------------------------------
+### Github models
+#------------------------------
+
+def is_github_page (url_link):
+    assert (type(url_link) == type(str), str("is_github_page, url_link parameter is of type " + str(type(url_link)) + ". str is expected."))
+    if url_link.startswith("https://github.com/"):
+        return True
+    return False
+
+def is_github_release_page (url_link):
+    assert (type(url_link) == type(str), str("is_github_release_page, url_link parameter is of type " + str(type(url_link)) + ". str is expected."))
+    if "releases/tag/" in url_link:
+        return True
+    return False
+
+def get_github_download_link_from_homepage (github_homepage_url):
+    assert (type(github_homepage_url) == type(str), str("Github Homepage URL (" + str(github_homepage_url) + ") is of type " + str(type(github_homepage_url)) + ". str is expected."))
+
+    # Get zip from master branch, also works for main
+    zip_url = github_homepage_url + "/archive/refs/heads/master.zip"
+
+    # Test zip url
+    # return zip direct link on success
+    # return None on failure
+    response = requests.get(zip_url, stream=True)
+    if not response.ok:
+        zip_url = None
+
+    return zip_url
+
+
+def get_github_download_link_from_release_page (github_release_url):
+    # Check if url is a string
+    assert (type(github_release_url) == type(str), str("Github Release URL (" + str(github_release_url) + ") is of type " + str(type(github_release_url)) + ". str is expected."))
+
+    zip_url = None
+
+    # Check if url is link to release page
+    if is_github_release_page(github_release_url):
+        
+        # Get zip URL from release page
+        zip_url = github_release_url.replace("/releases/tag/", "/archive/refs/tags/")
+        zip_url = zip_url + ".zip"
+        
+        # Test zip url
+        # return zip direct link on success
+        # return None on failure
+        response = requests.get(zip_url, stream=True)
+        if not response.ok:
+            zip_url = None
+
+    return zip_url
+
+#------------------------------
 
 
 ### Parameters ###
@@ -118,8 +173,20 @@ def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, e
     # Get run instructions
     # 1. Code URL
     for icode in repos:
+        # ModelDB ?
         if is_modeldb_page (icode):
             json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"]})
+        
+        # GitHub repo ?
+        elif is_github_page (icode):
+
+            # GitHub release ?
+            if is_github_release_page(icode):
+                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_release_page(icode), "path": json_content["Metadata"]["workdir"]})
+
+            # GitHub home page
+            else:
+                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_homepage(icode), "path": json_content["Metadata"]["workdir"]})
         else:
             json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]}) 
 
