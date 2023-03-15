@@ -51,26 +51,26 @@ report_default_values = {
 #------------------------------
 
 def is_modeldb_page (url_link):
-    assert (type(url_link) == type(str))
-    if url_link.startswith("https://senselab.med.yale.edu/") or url_link.startswith("http://modeldb.science"):
+    assert (type(url_link) == type(str), str("is_modeldb_page, url_link is type of " + str(type(url_link))) )
+    if url_link.startswith("https://senselab.med.yale.edu/") or url_link.startswith("http://modeldb.science/") or url_link.startswith("http://modeldb.yale.edu/"):
         return True
     return False
 
 def get_modeldb_download_link_from_page (modeldb_page_url):
-    assert (type(modeldb_page_url) == type(str), str("Modeldb URL (" + modeldb_page_url + ") is invalide"))
+    assert (type(modeldb_page_url) == type(str), str("Modeldb URL (" + modeldb_page_url + ") is invalid"))
 
     modeldb_id = None
 
     try:
-        modeldb_id = re.findall("model=\d+", modeldb_page_url)[0].split("=")[1]
+        modeldb_id = re.findall("\d+", modeldb_page_url)[0]
     except Exception as e:
-        print ("get_modeldb_download_link_from_page")
+        print ("Exception: get_modeldb_download_link_from_page")
         print (e)
         
     return get_modeldb_download_link_from_id (int(modeldb_id))
 
 def get_modeldb_download_link_from_id (modeldb_id):
-    assert (type(modeldb_id) == type(int), str("Modeldb ID (" + modeldb_id + ") is invalide"))
+    assert (type(modeldb_id) == type(int), str("Modeldb ID (" + str(modeldb_id) + ") is invalide"))
     
     return (str("http://modeldb.science/eavBinDown?o=" + str(modeldb_id)))
 #------------------------------
@@ -285,8 +285,10 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
     try:
         # Build JSON File that contains all important informations
         json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
-        with open("./report.json", "w") as f:
+        with open(str(json_content["Metadata"]["workdir"] + "/report.json"), "w") as f:
             json.dump(json_content, f, indent=4)
+
+        os.listdir(json_content["Metadata"]["workdir"])
 
     except Exception as e:
         print (e)
