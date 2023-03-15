@@ -239,7 +239,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
 
         if not model_version:
             raise Exception ("ModelVersion is None")
-        model_version.show()
+        # model_version.show()
     except Exception as e:
         print (e)
         exit (1)
