@@ -171,20 +171,20 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, run
 
         # ModelDB ?
         if is_modeldb_page (icode):
-            json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+            json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
         
         # GitHub repo ?
         elif is_github_page (icode):
 
             # GitHub release ?
             if is_github_release_page(icode):
-                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_release_page(icode), "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_release_page(icode), "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
 
             # GitHub home page
             else:
-                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_homepage(icode), "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_homepage(icode), "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
         else:
-            json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+            json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
         cpt += 1 
 
     # 3. Pre-instructions
