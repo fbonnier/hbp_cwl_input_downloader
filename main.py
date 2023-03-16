@@ -5,6 +5,7 @@ import warnings
 import hashlib
 import re
 import requests
+import urllib.request
 
 # Fairgraph
 from fairgraph import KGClient
@@ -166,26 +167,39 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, run
 
     # Get run instructions
     # 1. Code URL
-    cpt = 0
     for icode in repos:
-
+        code = {"url": None, "filepath": None, "path": None}
         # ModelDB ?
         if is_modeldb_page (icode):
-            json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+            code["url"] = get_modeldb_download_link_from_page(icode)
+            
         
         # GitHub repo ?
         elif is_github_page (icode):
 
             # GitHub release ?
             if is_github_release_page(icode):
-                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_release_page(icode), "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+                code["url"] = get_github_download_link_from_release_page(icode)
+
 
             # GitHub home page
             else:
-                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_homepage(icode), "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+                code["url"] = get_github_download_link_from_homepage(icode)
+
         else:
-            json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]+"/code"+str(cpt), "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
-        cpt += 1 
+            code["url"] = icode
+            
+        response = urllib.request.urlopen(code["url"])
+        if "Content-Disposition" in response.headers.keys():
+            dhead = response.headers['Content-Disposition']
+            code["filepath"] = json_content["Metadata"]["workdir"] + re.findall("filename=(.+)", dhead)[0]
+        else:
+            code["filepath"] = json_content["Metadata"]["workdir"] + code["url"].split("/")[-1]
+        
+        folder = code["filepath"].split("/")[-1]
+        code["path"] = json_content["Metadata"]["workdir"] + "/" + folder.split(".")[0] + "/"
+
+        json_content["Metadata"]["run"]["code"].append(code)
 
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
