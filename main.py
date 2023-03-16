@@ -33,7 +33,7 @@ report_default_values = {
             "path": None}, # Absolute path of the workflow data file to download
         },
     "run": {
-        "code": [], # URL and Path of the code to download and execute, IRI, Label and Homepage
+        "code": [], # URL, Filepath and Path of the code to download and execute, IRI, Label and Homepage
         "pre-instruction": [], # array of known instructions: untar, compile, move inputs, ...
         "instruction": None, # str
         "inputs": [], # Should contain "url" and "path" of input files to download
@@ -166,23 +166,26 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, run
 
     # Get run instructions
     # 1. Code URL
+    cpt = 0
     for icode in repos:
+
         # ModelDB ?
         if is_modeldb_page (icode):
-            json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"]})
+            json_content["Metadata"]["run"]["code"].append({"url": get_modeldb_download_link_from_page(icode), "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
         
         # GitHub repo ?
         elif is_github_page (icode):
 
             # GitHub release ?
             if is_github_release_page(icode):
-                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_release_page(icode), "path": json_content["Metadata"]["workdir"]})
+                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_release_page(icode), "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
 
             # GitHub home page
             else:
-                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_homepage(icode), "path": json_content["Metadata"]["workdir"]})
+                json_content["Metadata"]["run"]["code"].append({"url": get_github_download_link_from_homepage(icode), "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
         else:
-            json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"]}) 
+            json_content["Metadata"]["run"]["code"].append({"url": icode, "path": json_content["Metadata"]["workdir"], "filepath": str(json_content["Metadata"]["workdir"]+"/code_archive"+str(cpt))})
+        cpt += 1 
 
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
