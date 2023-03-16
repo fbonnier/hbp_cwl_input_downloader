@@ -50,15 +50,14 @@ report_default_values = {
 ### ModelDB models
 #------------------------------
 
-def is_modeldb_page (url_link):
-    assert (type(url_link) == type(str), str("is_modeldb_page, url_link is type of " + str(type(url_link))) )
+def is_modeldb_page (url_link: str) -> bool:
+    
     if url_link.startswith("https://senselab.med.yale.edu/") or url_link.startswith("http://modeldb.science/") or url_link.startswith("http://modeldb.yale.edu/"):
         return True
     return False
 
-def get_modeldb_download_link_from_page (modeldb_page_url):
-    assert (type(modeldb_page_url) == type(str), str("Modeldb URL (" + modeldb_page_url + ") is invalid"))
-
+def get_modeldb_download_link_from_page (modeldb_page_url: str)-> int: 
+    
     modeldb_id = None
 
     try:
@@ -69,8 +68,7 @@ def get_modeldb_download_link_from_page (modeldb_page_url):
         
     return get_modeldb_download_link_from_id (int(modeldb_id))
 
-def get_modeldb_download_link_from_id (modeldb_id):
-    assert (type(modeldb_id) == type(int), str("Modeldb ID (" + str(modeldb_id) + ") is invalide"))
+def get_modeldb_download_link_from_id (modeldb_id: int):
     
     return (str("http://modeldb.science/eavBinDown?o=" + str(modeldb_id)))
 #------------------------------
@@ -79,20 +77,18 @@ def get_modeldb_download_link_from_id (modeldb_id):
 ### Github models
 #------------------------------
 
-def is_github_page (url_link):
-    assert (type(url_link) == type(str), str("is_github_page, url_link parameter is of type " + str(type(url_link)) + ". str is expected."))
+def is_github_page (url_link: str) -> bool:
     if url_link.startswith("https://github.com/"):
         return True
     return False
 
-def is_github_release_page (url_link):
-    assert (type(url_link) == type(str), str("is_github_release_page, url_link parameter is of type " + str(type(url_link)) + ". str is expected."))
+def is_github_release_page (url_link: str) -> bool:
+    
     if "releases/tag/" in url_link:
         return True
     return False
 
-def get_github_download_link_from_homepage (github_homepage_url):
-    assert (type(github_homepage_url) == type(str), str("Github Homepage URL (" + str(github_homepage_url) + ") is of type " + str(type(github_homepage_url)) + ". str is expected."))
+def get_github_download_link_from_homepage (github_homepage_url: str) -> str:
 
     # Get zip from master branch, also works for main
     zip_url = github_homepage_url + "/archive/refs/heads/master.zip"
@@ -107,10 +103,8 @@ def get_github_download_link_from_homepage (github_homepage_url):
     return zip_url
 
 
-def get_github_download_link_from_release_page (github_release_url):
-    # Check if url is a string
-    assert (type(github_release_url) == type(str), str("Github Release URL (" + str(github_release_url) + ") is of type " + str(type(github_release_url)) + ". str is expected."))
-
+def get_github_download_link_from_release_page (github_release_url: str) -> str:
+    
     zip_url = None
 
     # Check if url is link to release page
@@ -139,7 +133,7 @@ def get_github_download_link_from_release_page (github_release_url):
 # inputs: array of dict {url: x, destination: y}
 # outputs: array of str
 # runscript: array of str
-def build_json_file (id, workdir, workflow, repos, inputs, outputs, runscript, environment):
+def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, runscript, environment):
     json_content = { "Metadata": report_default_values}
     
     # Asserts
@@ -288,7 +282,8 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         with open(str(json_content["Metadata"]["workdir"] + "/report.json"), "w") as f:
             json.dump(json_content, f, indent=4)
 
-        os.listdir(json_content["Metadata"]["workdir"])
+        if "report.json" in os.listdir(json_content["Metadata"]["workdir"]):
+            print ("File created successfully")
 
     except Exception as e:
         print (e)
@@ -324,5 +319,5 @@ if __name__ == "__main__":
     else:
         print ("Error: Authentification failed")
         exit (1)
-
+    
     exit(0)
