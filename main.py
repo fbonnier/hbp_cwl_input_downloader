@@ -327,6 +327,11 @@ if __name__ == "__main__":
     parser.add_argument("--run", type=str, metavar="Run instruction", nargs=1, dest="run", default="./run",\
     help="Running instruction to run the model instance")
 
+    ## Pre-Run instruction can be specified in command line
+    ## A single pre-instruction (str) is checked as of now
+    parser.add_argument("--pre-run", type=str, metavar="Pre-Run instruction", nargs=1, dest="prerun", default="",\
+    help="Pre-Running instructions to run before running the model instance")
+
     args = parser.parse_args()
 
     token = args.token[0]
