@@ -134,7 +134,7 @@ def get_github_download_link_from_release_page (github_release_url: str) -> str:
 # inputs: array of dict {url: x, destination: y}
 # outputs: array of str
 # runscript: array of str
-def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, runscript, environment):
+def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, prerun, runscript, environment):
     json_content = { "Metadata": report_default_values}
     
     # Asserts
@@ -202,7 +202,7 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, run
         json_content["Metadata"]["run"]["code"].append(code)
 
     # 3. Pre-instructions
-    json_content["Metadata"]["run"]["pre-instruction"] = report_default_values["run"]["pre-instruction"]
+    json_content["Metadata"]["run"]["pre-instruction"] = prerun if prerun else report_default_values["run"]["pre-instruction"]
     # 4. instruction
     json_content["Metadata"]["run"]["instruction"] = runscript if runscript else report_default_values["run"]["instruction"]
     # 5. Inputs
@@ -239,7 +239,7 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, run
     
 
 
-def get_cwl_json_kg3 (token=None, id=None, run=None):
+def get_cwl_json_kg3 (token=None, id=None, run=None, prerun=None):
 
     # Fairgraph
     client = KGClient(token)
@@ -283,6 +283,9 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         if not instance_outputs:
             warnings.warn("No output data to compare for this Instance ... Continue")
 
+        # Get Pre-Run instructions, to prepare simulation run
+        instance_prerun = prerun
+        
         # Get Run instructions,
         # by default the run instruction is set according to parameter $run
         # TODO:
@@ -290,13 +293,15 @@ def get_cwl_json_kg3 (token=None, id=None, run=None):
         if not run:
             raise Exception ("No run instruction specified for this Instance")
         instance_run = run
+
+
     except Exception as e:
         print (e)
         exit (1)
 
     try:
         # Build JSON File that contains all important informations
-        json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs, runscript=instance_run, environment={})
+        json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs,prerun=instance_prerun, runscript=instance_run, environment={})
         with open(str(json_content["Metadata"]["workdir"] + "/report.json"), "w") as f:
             json.dump(json_content, f, indent=4)
 
@@ -327,10 +332,11 @@ if __name__ == "__main__":
     token = args.token[0]
     id = args.id[0]
     run = args.run[0]
+    prerun = args.prerun[0]
 
     if token:
         if id:
-            get_cwl_json_kg3(token=token, id=id, run=run)
+            get_cwl_json_kg3(token=token, id=id, run=run, prerun=prerun)
         else:
             print ("Error: Instance ID not recognized")
             exit (1)
