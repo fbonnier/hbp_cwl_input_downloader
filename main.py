@@ -203,8 +203,10 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, pre
 
     # 3. Pre-instructions
     json_content["Metadata"]["run"]["pre-instruction"] = prerun if prerun else report_default_values["run"]["pre-instruction"]
+    json_content["Metadata"]["run"]["pre-instruction"].replace("$WORKDIR", json_content["Metadata"]["workdir"])
     # 4. instruction
     json_content["Metadata"]["run"]["instruction"] = runscript if runscript else report_default_values["run"]["instruction"]
+    json_content["Metadata"]["run"]["instruction"].replace("$WORKDIR", json_content["Metadata"]["workdir"])
     # 5. Inputs
     json_content["Metadata"]["run"]["inputs"] = inputs if inputs else report_default_values["run"]["inputs"]
     # 6. Expected outputs
