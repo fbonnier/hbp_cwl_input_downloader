@@ -44,7 +44,9 @@ report_default_values = {
             "module deps": [], # additional module packages to load
             "profiling configuration": []} # profiling configuration to add for profiling and tracing analysis
     
-    }
+    },
+    "paper": None, # has paper 
+    "homepage": None # has homepage, documentation url, ...
     }
 
 #------------------------------
@@ -134,7 +136,7 @@ def get_github_download_link_from_release_page (github_release_url: str) -> str:
 # inputs: array of dict {url: x, destination: y}
 # outputs: array of str
 # runscript: array of str
-def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, prerun, runscript, environment):
+def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, prerun, runscript, environment, homepage, paper):
     json_content = { "Metadata": report_default_values}
     
     # Asserts
@@ -144,6 +146,12 @@ def build_json_file (id:str , workdir:str, workflow, repos, inputs, outputs, pre
     
     # Get Model's ID
     json_content["Metadata"]["id"] = id
+
+    # Get Model's Homepage
+    json_content["Metadata"]["homepage"] = homepage
+
+    # Get Model's Paper
+    json_content["Metadata"]["paper"] = paper
 
     # Get Workdir
     json_content["Metadata"]["workdir"] = workdir if workdir else report_default_values["workdir"]
@@ -273,6 +281,22 @@ def get_cwl_json_kg3 (token=None, id=None, run=None, prerun=None):
         exit (1)
 
     try:
+        # Get homepage
+        instance_homepage = ""
+        if model_version.homepage:
+            instance_homepage = model_version.homepage.resolve(client).url.value
+    except:
+        instance_homepage = None
+
+    try:
+        # Get paper
+        instance_paper = ""
+        if model_version.paper:
+            instance_paper = model_version.identifier.resolve(client).url.value
+    except:
+        instance_paper = None
+
+    try:
         # Get inputs
         #       !! No exception raised if no inputs
         #       !! Warning message is shown instead
@@ -305,7 +329,7 @@ def get_cwl_json_kg3 (token=None, id=None, run=None, prerun=None):
 
     try:
         # Build JSON File that contains all important informations
-        json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs,prerun=instance_prerun, runscript=instance_run, environment={})
+        json_content = build_json_file (id=id, workflow={}, workdir="", repos=instance_repo, inputs = instance_inputs, outputs=instance_outputs,prerun=instance_prerun, runscript=instance_run, environment={}, homepage=instance_homepage, paper=instance_paper)
         with open(str(json_content["Metadata"]["workdir"] + "/report.json"), "w") as f:
             json.dump(json_content, f, indent=4)
 
